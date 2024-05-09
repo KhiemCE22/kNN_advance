@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "functional": "cpp",
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "iterator": "cpp",
+        "vector": "cpp",
+        "list": "cpp",
+        "stdexcept": "cpp"
+    }
+}
