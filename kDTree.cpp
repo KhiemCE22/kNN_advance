@@ -201,7 +201,7 @@ void merge(int left, int middle , int right, vector<vector<int>> &pointList, int
         }
     }
 
-    // Tiếp tục ghi đè các phần tử còn lại nếu có
+    
     while (i < n1){
         if (!indexOfList.empty())
             indexOfList[k] = leftIndex[i]; // update  indexOfList
@@ -239,7 +239,7 @@ void kDTree :: buildTreeRec( vector<vector<int>> &pointList,int start, int end, 
     }
     vector<int> data = pointList[median];
     node = new kDTreeNode(data);
-     // test   
+     // Test   
     // cout<<"Create node:"<<endl;
     // cout<<"data: "<<*node<<endl;
     buildTreeRec(pointList,start,median-1,node -> left, depth + 1);
@@ -268,7 +268,7 @@ void kDTree :: buildTreeRec(vector<vector<int>>& pointList, vector<int>& labelLi
     }
     vector<int> data = pointList[median];
     node = new kDTreeNode(data, labelList[ indexOfList[median] ]);
-     // test   
+     // Test   
     // cout<<"Create node:"<<endl;
     // cout<<"data: "<<*node<<"label: "<<labelList[ indexOfList[median] ]<<endl;
 
@@ -286,16 +286,11 @@ void kDTree :: buildTree(const vector<vector<int>> &pointList, const vector<int>
         deleteTree(this -> root);
     buildTreeRec(points,labels,indexOfList, 0, points.size() - 1, this -> root, 0);
 
-    //test
+    //Test
     // cout<<"Tree with label:"<<endl;
     // cout<<"node: "<<this -> nodeCount()<<endl;
     // cout<<"leaf: "<<this -> leafCount()<<endl;
-    // cout<<endl;
-    // this -> inorderTraversal();
-    // cout<<endl;
-    // for (auto i : indexOfList) cout<<i<<" ";
-    // cout<<endl;
-    // cout<<this -> nodeCount()<<endl;
+
 }
 /*-------------------------------------------------------------------------*/
 kDTreeNode* kDTree :: getMinNodeRec(kDTreeNode*  node, int split_axis, int depth){
@@ -520,7 +515,7 @@ kNN::kNN(int k){
 }
 
 void kNN::fit(Dataset& X_train, Dataset& y_train) {
-    // No need for dynamic allocation here
+
     this->X_train = new Dataset(X_train);
     this->y_train = new Dataset(y_train);
 
@@ -539,10 +534,9 @@ void kNN::fit(Dataset& X_train, Dataset& y_train) {
         }
     }
     Tree->buildTree(pointList, labelList);
-    // test
-
-    kDTree* T = new kDTree(this -> k);
-    T -> buildTree(pointList);
+    // Test
+    // kDTree* T = new kDTree(this -> k);
+    // T -> buildTree(pointList);  
     // cout<<"Tree without label: "<<endl;
     // cout<<"node: "<<T -> nodeCount()<<"leaf: "<<T ->leafCount()<<endl;
 }
@@ -576,9 +570,6 @@ double kNN::score(const Dataset& y_test, const Dataset& y_pred) {
     }
 
     int sampleSize = dataPred.size();
-    if (sampleSize == 0) {
-        throw runtime_error("Empty prediction list");
-    }
 
     int count = 0;
     auto itTest = dataTest.begin();

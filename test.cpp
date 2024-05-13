@@ -28,6 +28,20 @@ struct kDTreeNode
         this->right = right;
     }
     void print();
+    friend ostream &operator<<(ostream &os, const kDTreeNode &node)
+    {
+        os << "(";
+        for (int i = 0; i < node.data.size(); i++)
+        {
+            os << node.data[i];
+            if (i != node.data.size() - 1)
+            {
+                os << ", ";
+            }
+        }
+        os << ")";
+        return os;
+    }
 };
 
 class kDTree
@@ -58,8 +72,7 @@ public:
     
     // ********************
     kDTreeNode* removeRec(const vector<int> &point, kDTreeNode* & node, int depth);
-    void nearestNeighbourRec(const vector<int> &target, kDTreeNode *&best, kDTreeNode* node, int depth);
-    void kNearestNeighbour(const vector<int> &target, int k, kDTreeNode* node,vector<kDTreeNode *> &bestList, int depth);
+
     /*official method*/
 
     void inorderTraversal() const;
@@ -74,68 +87,58 @@ public:
     void remove(const vector<int> &point);
     bool search(const vector<int> &point);
     void buildTree(const vector<vector<int>> &pointList);
-    void nearestNeighbour(const vector<int> &target, kDTreeNode *&best);
-    void kNearestNeighbour(const vector<int> &target, int k, vector<kDTreeNode *> &bestList);
+
     
     // bonus for remove method
     kDTreeNode* getMinNodeRec(kDTreeNode*  node, int split_axis, int depth);
     kDTreeNode* getMinNode(int split_axis);
     ///// vissulize
-    void visualize() const {
-        if (!root)
-            return;
 
-        // **Pre-compute node levels for efficiency**
-        vector<vector<kDTreeNode*>> levelNodes(heightRec(root));
-        getLevelNodes(root, 0, levelNodes);
-
-        // **Print each level with proper spacing**
-        for (int i = 0; i < levelNodes.size(); i++) {
-            printRow(levelNodes[i], levelNodes.size(), i);
-        }
-    }
-
-    void getLevelNodes(kDTreeNode* node, int depth, vector<vector<kDTreeNode*>>& levelNodes) const {
-        if (!node)
-            return;
-
-        levelNodes[depth].push_back(node);
-
-        getLevelNodes(node->left, depth + 1, levelNodes);
-        getLevelNodes(node->right, depth + 1, levelNodes);
-    }
-
-    void printRow(const vector<kDTreeNode*>& nodes, int totalLevels, int depth) const {
-    int spacing = (totalLevels - depth) * 4; // Adjust spacing for better readability
-
-    cout << setw(spacing);
-    bool toggle = true; // Start with left
-    for (kDTreeNode* node : nodes) {
-        if (node) { // Print node data if not nullptr
-            if (toggle)
-                cout << "/" << setw(spacing - 3);
-            else
-                cout << "\\" << setw(spacing - 3);
-
-            // Print node data (assuming data[0])
-            cout << "(" << node->data[0] << ", " << node->data[1] << ", " << node->data[2] << ")";
-        } else { // Print placeholder for empty node
-            cout << setw(spacing - 3); // Adjust spacing for placeholder
+void printTree()
+{
+        if (this -> root == NULL)
+        {
+                return;
         }
 
-        toggle = !toggle;
-    }
-    cout << endl;
+        cout << *(this -> root) << endl;
+        printSubtree(root, "");
+        cout << endl;
+}
 
-    cout << setw(spacing);
-    for (kDTreeNode* node : nodes) {
-        if (node)
-            cout << setw(spacing - 3); // Adjust spacing for node data
-        else
-            cout << setw(spacing - 3) << "-"; // Print placeholder symbol
-    }
-    cout << endl;
-    }
+void printSubtree(kDTreeNode* root, const string& prefix)
+{
+        if (root == NULL)
+        {
+                return;
+        }
+
+        bool hasLeft = (root->left != NULL);
+        bool hasRight = (root->right != NULL);
+
+        if (!hasLeft && !hasRight)
+        {
+                return;
+        }
+
+        cout << prefix;
+        cout << ((hasLeft  && hasRight) ? "├── " : "");
+        cout << ((!hasLeft && hasRight) ? "└── " : "");
+
+        if (hasRight)
+        {
+                bool printStrand = (hasLeft && hasRight && (root->right->right != NULL || root->right->left != NULL));
+                string newPrefix = prefix + (printStrand ? "│   " : "    ");
+                cout << *(root->right) << endl;
+                printSubtree(root->right, newPrefix);
+        }
+
+        if (hasLeft)
+        {
+                cout << (hasRight ? prefix : "") << "└── " << *(root->left) << endl;
+                printSubtree(root->left, prefix + "    ");
+        }
+}
 
 };
 
@@ -429,91 +432,7 @@ void kDTree :: remove(const vector<int> &point){
     this -> root = removeRec(point, this -> root, 0);
 }
 
-/*------------------------------------------------------------------*/
-/*Eurclid distance*/
-double distance(const vector<int> &u, const vector<int> &v){
-    // this  two vector must has equally dimension
-    assert(u.size() ==  v.size());
-    double sum = 0.0;
-    double diff;
-    for (int i = 0; i < u.size(); i++){
-        diff = u[i] - v[i];
-        sum += diff * diff;
-    }
-    return sqrt(sum);
-}
 
-void kDTree :: nearestNeighbourRec(const vector<int> &target, kDTreeNode *&best, kDTreeNode* node, int depth){
-    // R: distance from target to best
-    // r: distance from target to current
-    // d: distance about dimension alpha from target to current
-    double R, r;
-    int d;
-    /*
-    base case:
-    node is null : return
-    node is leaf and best is null : traversal and choose leaf node for the nearest neighbor currently, return to recursion stack
-    */
-
-    if (!node)
-        return;
-    if (!best && !node -> left && !node ->right){
-        best = node;
-        return;
-    }
-    int dimension = depth % k;
-    // node can't move: 
-    //  - current node equal with tartget choosse it is best and return
-    //  - target[dimension] < current[dimension] && leftsubtree is null
-    //  - target[dimension] >= current[dimension] && rightsubtree is null
-    if (equal(target, node -> data)){
-        best = node;
-        return;
-    }
-    // traverse left subtree 
-    if (target[dimension] < node-> data[dimension]){
-        if (!node -> left) {
-            best = node;
-            return;
-        }
-        else 
-            nearestNeighbourRec(target, best,node -> left, depth + 1 );
-        r = distance(target, node -> data);
-        R = distance(target, best -> data);
-        d = abs(target[dimension] - node -> data[dimension]);
-        if ( r < R) {
-            // updatate best 
-            best = node;
-        }
-        // if the plane split cut sphere
-        if ( d < R) 
-            nearestNeighbourRec(target, best, node -> right, depth + 1);
-    }
-    // traverse right subtree
-    else {
-        if (!node -> right){
-            best = node;
-            return;
-        }
-        else
-            nearestNeighbourRec(target, best,node -> right, depth + 1 );
-        r = distance(target, node -> data);
-        R = distance(target, best -> data);
-        d = abs(target[dimension] - node -> data[dimension]);
-        if ( r < R) {
-            // updatate best if the distance is shorten than.
-            best = node;
-        }
-        // if the plane split cut sphere
-        if ( d < R) 
-            nearestNeighbourRec(target, best, node -> left, depth + 1);
-    }
-
-}
-
-void kDTree :: nearestNeighbour(const vector<int> &target, kDTreeNode *&best){
-    nearestNeighbourRec(target, best, this -> root,0 );
-}
 int main()
 {
     kDTree* T = new kDTree(3);
@@ -537,67 +456,11 @@ int main()
     cout<<"Leaf: "<<T-> leafCount()<<endl;
     vector<int> target = {10,2,5};
     kDTreeNode* best = NULL;
-    T -> nearestNeighbour(target, best);
-    T -> visualize();
+    T -> printTree();
     cout<<"------------------------------------------------------------------"<<endl;
-    best -> print();
     cout<<endl;	
     cout<<"------------------------------------------------------------------"<<endl;
 
     return 0;
-    /*
-    x:(2,7) (3,6) (6,12) (9,1) (10,19) (13,15) (17,15) -> (9,1)
-    y:(3,6) (2,7) (6,12) -> (2,7)
-    y:(13,15) (17,15) (10,19)
-    insert (5,6)
-    insert (2,2)
-    insert (2,8)
-    insert (7,3)
-    insert (3,5)
-    insert (8,1)
-    insert (8,7)
-    insert (9,6)
-    
-    // (0,0) (2)
-    
-    
-    
-    
-        kDTree* T = new kDTree(1);
-    int n,d;
-    cout<<"number of node && dimension"<<endl;
-    cin>>n>>d;
-    int x;
-    for (int i = 0; i < n; i++){
-        cout<<"type node"<<endl;
-        vector<int> point;
-        for (int j = 0; j < d; j++){
-            cin>>x;
-            point.push_back(x);
-        }
-        T -> insert(point);
-    }
-    T -> inorderTraversal();
-    T -> visualize();
-    cout<<endl<<"H: "<<T-> height()<<endl;
-    cout<<"Leaf: "<<T-> leafCount()<<endl;
-    kDTreeNode* best;
-    bool flag = true;
-    char c;
-    while (true){
-        cout<<"Type target: "<<endl;
-        vector<int> target;
-        for (int i = 0; i < d; i++){
-            cin >>x;
-            target.push_back(x);
-        }
-        best = nullptr;
-        T -> nearestNeighbour(target,best);
-        best -> print();
-        cout<<"repeat ? y/n"<<endl;
-        cin >> c;
-        if (c == 'y') flag = true;
-        else if (c == 'n') flag = false;
-    }
-    */
+
 }

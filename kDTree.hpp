@@ -63,7 +63,7 @@ public:
     void insertRec(kDTreeNode*& node, const vector<int> & point, int depth);
     bool searchRec(kDTreeNode* node, const vector<int> &point, int depth);
     void buildTreeRec(vector<vector<int>>& pointList, int start, int end, kDTreeNode*& node, int depth);
-    void buildTreeRec(vector<vector<int>>& pointList, vector<int>& labelList, vector<int>& indexOfList, int start, int end, kDTreeNode*& node, int depth);
+    void buildTreeRec(vector<vector<int>>& pointList, vector<int>& labelList, vector<int>& indexOfList, int start, int end, kDTreeNode*& node, int depth); // for kNN
     // ********************
     kDTreeNode* removeRec(const vector<int> &point, kDTreeNode* & node, int depth);
     void nearestNeighbourRec(const vector<int> &target, kDTreeNode *&best, kDTreeNode* node, int depth);
@@ -82,7 +82,7 @@ public:
     void remove(const vector<int> &point);
     bool search(const vector<int> &point);
     void buildTree(const vector<vector<int>> &pointList);
-    void buildTree(const vector<vector<int>> &pointList, const vector<int> &labelList);
+    void buildTree(const vector<vector<int>> &pointList, const vector<int> &labelList); //for kNN
     void nearestNeighbour(const vector<int> &target, kDTreeNode *&best);
     void kNearestNeighbour(const vector<int> &target, int k, vector<kDTreeNode *> &bestList);
     
